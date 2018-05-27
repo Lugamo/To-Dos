@@ -1,99 +1,102 @@
-var expect = require('expect');
-var request = require('supertest');
-
-const {app} = require('./../server.js');
-const {ToDo} = require('./../models/todo');
+const expect = require('expect');
+const request = require('supertest');
 const {ObjectID} = require('mongodb');
 
-const todo = [{
+const {app} = require('./../server');
+const {Todo} = require('./../models/todo');
+
+const todos = [{
   _id: new ObjectID(),
-  text: 'First test ToDo'
+  text: 'First test todo'
 }, {
   _id: new ObjectID(),
-  text: 'Second test ToDo'
+  text: 'Second test todo'
 }];
 
 beforeEach((done) => {
-  ToDo.remove({}).then(() => {
-    ToDo.insertMany(todo);
-  }).then(() => done())
+  Todo.remove({}).then(() => {
+    return Todo.insertMany(todos);
+  }).then(() => done());
 });
 
-describe('POST /todo', () => {
+describe('POST /todos', () => {
   it('should create a new todo', (done) => {
-    var text = 'Test todo text'
+    var text = 'Test todo text';
 
     request(app)
-    .post('/todo')
-    .send({text})
-    .expect(200)
-    .expect((res) => {
-      expect(res.body.text).toBe(text);
-    })
-    .end((err, res) => {
-      if (err) {
-        return done(err);
-      }
-      ToDo.find({text}).then((todo) => {
-        expect(todo.length).toBe(1);
-        expect(todo[0].text).toBe(text);
-        done();
-      }).catch((e) => done(e));
-    });
-  })
+      .post('/todos')
+      .send({text})
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.text).toBe(text);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
 
-  it('Should not create a todo with a invalid body data', (done) => {
+        Todo.find({text}).then((todos) => {
+          expect(todos.length).toBe(1);
+          expect(todos[0].text).toBe(text);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should not create todo with invalid body data', (done) => {
     request(app)
-    .post('/todo')
-    .send('')
-    .expect(400)
-    .end((err, res) => {
-      if (err) {
-        return done(err);
-      }
-      ToDo.find().then((todo) => {
-        expect(todo.length).toBe(2);
-        done();
-      }).catch((e) => done(e));
-    });
+      .post('/todos')
+      .send({})
+      .expect(400)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Todo.find().then((todos) => {
+          expect(todos.length).toBe(2);
+          done();
+        }).catch((e) => done(e));
+      });
   });
 });
 
 describe('GET /todos', () => {
-  it('Should get all ToDo', (done) => {
+  it('should get all todos', (done) => {
     request(app)
-    .get('/todo')
-    .expect(200)
-    .expect((res) => {
-      expect(res.body.todo.length).toBe(2);
-    })
-    .end(done)
+      .get('/todos')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todos.length).toBe(2);
+      })
+      .end(done);
   });
 });
-describe('GET /todo/:id', () => {
-  it('Should return ToDo doc', (done) => {
+
+describe('GET /todos/:id', () => {
+  it('should return todo doc', (done) => {
     request(app)
-    .get(`/todo/${todo[0]._id.toHexString()}`)
-    .expect(200)
-    .expect((res) => {
-      //result debido a que en server.js en /todo/:id hago send({result}),es decir la propiedad result
-      expect(res.body.result.text).toBe(todo[0].text)
-    })
-    .end(done)
+      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end(done);
   });
 
-  it('Should return 404 if ToDo not found', (done) => {
-    var newID = new ObjectID()
+  it('should return 404 if todo not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+
     request(app)
-    .get(`/todo/${newID.toHexString()}`)
-    .expect(404)
-    .end(done);
-  })
-  it('Should return 404 if ToDo not found', (done) => {
-    var newID = new ObjectID()
+      .get(`/todos/${hexId}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 for non-object ids', (done) => {
     request(app)
-    .get(`/todo/123`)
-    .expect(404)
-    .end(done);
-  })
+      .get('/todos/123abc')
+      .expect(404)
+      .end(done);
+  });
 });
