@@ -33,17 +33,17 @@ app.get('/todo/:id', (req, res) => {
   var id = req.params.id;
   if (!ObjectID.isValid(id)) {
 
-    return res.send(404,{})
+    return res.status(404).send()
   }
 
   ToDo.findById(id).then((result) => {
     if (!result) {
-      return res.send(404,{})
+      return res.status(404).send()
     } else {
-      res.send('The result: \n' + JSON.stringify(result, undefined,2));
+      res.send({result});
     }
   }, (err) => {
-    res.send(400,{})
+    res.status(400).send()
   })
 });
 

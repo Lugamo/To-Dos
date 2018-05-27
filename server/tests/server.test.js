@@ -3,10 +3,13 @@ var request = require('supertest');
 
 const {app} = require('./../server.js');
 const {ToDo} = require('./../models/todo');
+const {ObjectID} = require('mongodb');
 
 const todo = [{
+  _id: new ObjectID(),
   text: 'First test ToDo'
 }, {
+  _id: new ObjectID(),
   text: 'Second test ToDo'
 }];
 
@@ -66,4 +69,31 @@ describe('GET /todos', () => {
     })
     .end(done)
   });
+});
+describe('GET /todo/:id', () => {
+  it('Should return ToDo doc', (done) => {
+    request(app)
+    .get(`/todo/${todo[0]._id.toHexString()}`)
+    .expect(200)
+    .expect((res) => {
+      //result debido a que en server.js en /todo/:id hago send({result}),es decir la propiedad result
+      expect(res.body.result.text).toBe(todo[0].text)
+    })
+    .end(done)
+  });
+
+  it('Should return 404 if ToDo not found', (done) => {
+    var newID = new ObjectID()
+    request(app)
+    .get(`/todo/${newID.toHexString()}`)
+    .expect(404)
+    .end(done);
+  })
+  it('Should return 404 if ToDo not found', (done) => {
+    var newID = new ObjectID()
+    request(app)
+    .get(`/todo/123`)
+    .expect(404)
+    .end(done);
+  })
 });
