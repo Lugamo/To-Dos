@@ -3,7 +3,7 @@ var bodyParser = require('body-parser');
 var {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
-var {ToDo} = require('./models/todo');
+var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 var app = express();
@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
-  var todo = new ToDo({
+  var todo = new Todo({
     text: req.body.text
   });
 
@@ -24,7 +24,7 @@ app.post('/todos', (req, res) => {
 });
 
 app.get('/todos', (req, res) => {
-  ToDo.find().then((todos) => {
+  Todo.find().then((todos) => {
     res.send({todos});
   }, (e) => {
     res.status(400).send(e);
@@ -38,7 +38,7 @@ app.get('/todos/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  ToDo.findById(id).then((todo) => {
+  Todo.findById(id).then((todo) => {
     if (!todo) {
       return res.status(404).send();
     }

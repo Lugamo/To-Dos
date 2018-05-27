@@ -1,10 +1,10 @@
-var mongoose = require('mongoose')
+var mongoose = require('mongoose');
 
-var ToDo = mongoose.model('ToDo', {
+var Todo = mongoose.model('Todo', {
   text: {
     type: String,
     required: true,
-    minLength: 1,
+    minlength: 1,
     trim: true
   },
   completed: {
@@ -17,6 +17,4 @@ var ToDo = mongoose.model('ToDo', {
   }
 });
 
-module.exports = {
-  ToDo: ToDo
-};
+module.exports = {Todo};
