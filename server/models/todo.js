@@ -3,10 +3,9 @@ var mongoose = require('mongoose');
 var Todo = mongoose.model('Todo', {
   title: {
     type: String,
-    required: false,
+    required: true,
     minlength: 1,
     trim: true,
-    default: 'Untitled To Do'
   },
   text: {
     type: String,
